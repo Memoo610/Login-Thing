@@ -13,6 +13,12 @@
             min-height: 100vh;
             padding: 20px;
         }
+        .debug-info {
+            background: #333;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -78,9 +84,21 @@
             cursor: pointer;
             margin: 10px;
         }
+        .ip-display {
+            color: #4CAF50;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
+    <div id="debugInfo" class="debug-info" style="display: none;">
+        <h3>🔧 Debug Information</h3>
+        <p>Your IP Address: <span id="userIP" class="ip-display">Loading...</span></p>
+        <p>Allowed IPs: <span id="allowedIPs"></span></p>
+        <p>Status: <span id="accessStatus">Checking...</span></p>
+        <button onclick="location.reload()">🔄 Refresh Check</button>
+    </div>
+
     <div id="adminContent" style="display: none;">
         <div class="container">
             <div class="header">
@@ -131,16 +149,19 @@
 
     <div id="accessDenied" class="access-denied" style="display: none;">
         <h1>🚫 Access Denied</h1>
-        <p>This dashboard is restricted to authorized personnel only.</p>
+        <p id="deniedMessage">This dashboard is restricted to authorized personnel only.</p>
         <p><a href="index.html" style="color: #667eea;">Return to Login</a></p>
     </div>
 
     <script>
         // ⚠️ REPLACE THIS WITH YOUR ACTUAL PUBLIC IP ADDRESS ⚠️
-        // Visit https://whatismyipaddress.com to find your IP
         const ALLOWED_IPS = [
-            '169.224.100.144'  // ← YOU MUST CHANGE THIS!
+            '169.224.100.144'  // ← Replace this with the IP that shows in the debug box
         ];
+
+        // Show debug info
+        document.getElementById('debugInfo').style.display = 'block';
+        document.getElementById('allowedIPs').textContent = ALLOWED_IPS.join(', ');
 
         // IP verification
         async function verifyAccess() {
@@ -149,16 +170,30 @@
                 const data = await response.json();
                 const userIP = data.ip;
                 
-                console.log('Your IP is:', userIP); // This will show in browser console
+                // Show user's IP in debug info
+                document.getElementById('userIP').textContent = userIP;
+                
+                console.log('Your IP is:', userIP);
                 
                 if (ALLOWED_IPS.includes(userIP)) {
+                    document.getElementById('accessStatus').textContent = '✅ Access Granted';
                     document.getElementById('adminContent').style.display = 'block';
+                    document.getElementById('debugInfo').style.display = 'none';
                     loadDashboardData();
                 } else {
+                    document.getElementById('accessStatus').textContent = '❌ Access Denied';
                     document.getElementById('accessDenied').style.display = 'block';
+                    document.getElementById('deniedMessage').innerHTML = 
+                        `This dashboard is restricted.<br>Your IP: <strong>${userIP}</strong> is not in the allowed list.`;
                     console.log('Access denied for IP:', userIP);
+                    
+                    // Show what IP you need to add
+                    setTimeout(() => {
+                        alert(`🔍 Your IP is: ${userIP}\n\nAdd this to ALLOWED_IPS in the code!`);
+                    }, 1000);
                 }
             } catch (error) {
+                document.getElementById('accessStatus').textContent = '❌ Error checking IP';
                 document.getElementById('accessDenied').style.display = 'block';
             }
         }
